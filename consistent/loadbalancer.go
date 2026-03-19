@@ -42,13 +42,12 @@ type NodeResponse struct {
 
 // GetNodeRequest request cho GetNodeId
 type GetNodeRequest struct {
-	Bucket string
-	Key    int
+	IP string
 }
 
 // GetNodeResponse response cho GetNodeId
 type GetNodeResponse struct {
-	NodeID string
+	NodeID uint32
 	Error  string
 }
 
@@ -180,14 +179,14 @@ func (lb *LoadBalancer) RemoveNodeRPC(req NodeRequest, res *NodeResponse) error 
 	return nil
 }
 
-// GetNodeId lấy node ID cho một bucket:key (RPC-exposed)
+// GetNodeId lấy node ID cho một IP (RPC-exposed)
 func (lb *LoadBalancer) GetNodeId(req GetNodeRequest, res *GetNodeResponse) error {
-	node, err := lb.GetNode(fmt.Sprintf("%s:%d", req.Bucket, req.Key))
+	nodeId, err := lb.consistent.GetNodeId(req.IP)
 	if err != nil {
 		res.Error = err.Error()
 		return nil
 	}
-	res.NodeID = node
+	res.NodeID = nodeId
 	return nil
 }
 

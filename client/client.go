@@ -40,13 +40,12 @@ type NodeResponse struct {
 
 // GetNodeRequest request cho GetNodeId
 type GetNodeRequest struct {
-	Bucket string
-	Key    int
+	IP string
 }
 
 // GetNodeResponse response cho GetNodeId
 type GetNodeResponse struct {
-	NodeID string
+	NodeID uint32
 	Error  string
 }
 
@@ -61,7 +60,7 @@ func printUsage(command string) {
 	case "remove-node":
 		fmt.Println("Usage: go run client.go remove-node <ip:port>")
 	case "get-node-id":
-		fmt.Println("Usage: go run client.go get-node-id <bucket> <key>")
+		fmt.Println("Usage: go run client.go get-node-id <ip:port>")
 	case "list-nodes":
 		fmt.Println("Usage: go run client.go list-nodes")
 	default:
@@ -79,8 +78,13 @@ func main() {
 
 	// Validate arguments for each command
 	switch command {
-	case "get", "get-node-id":
+	case "get":
 		if len(os.Args) < 4 {
+			printUsage(command)
+			return
+		}
+	case "get-node-id":
+		if len(os.Args) < 3 {
 			printUsage(command)
 			return
 		}
@@ -170,21 +174,17 @@ func main() {
 		}
 
 	case "get-node-id":
-		bucket := os.Args[2]
-		key, err := strconv.Atoi(os.Args[3])
-		if err != nil {
-			log.Fatalf("Invalid key: '%s', must be an integer.", os.Args[3])
-		}
-		req := GetNodeRequest{Bucket: bucket, Key: key}
+		ip := os.Args[2]
+		req := GetNodeRequest{IP: ip}
 		var res GetNodeResponse
-		err = client.Call("LoadBalancer.GetNodeId", req, &res)
+		err := client.Call("LoadBalancer.GetNodeId", req, &res)
 		if err != nil {
 			log.Fatal("LoadBalancer.GetNodeId error:", err)
 		}
 		if res.Error != "" {
 			fmt.Printf("Error: %s\n", res.Error)
 		} else {
-			fmt.Printf("Node ID for bucket '%s', key '%d': %s\n", bucket, key, res.NodeID)
+			fmt.Printf("Node ID for '%s': %d\n", ip, res.NodeID)
 		}
 
 	case "list-nodes":

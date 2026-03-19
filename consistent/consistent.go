@@ -122,6 +122,20 @@ func (c *Consistent) Members() []string {
 	return m
 }
 
+// GetNodeId returns the hash ID for a given node IP (first replica)
+func (c *Consistent) GetNodeId(ip string) (uint32, error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	if _, ok := c.members[ip]; !ok {
+		return 0, errors.New("node not found")
+	}
+
+	// Return the hash of the first replica (index 0)
+	key := c.hashKey(c.eltKey(ip, 0))
+	return key, nil
+}
+
 // Get returns an element close to where name hashes to in the circle.
 func (c *Consistent) Get(name string) (string, error) {
 	c.RLock()
