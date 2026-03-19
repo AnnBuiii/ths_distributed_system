@@ -29,6 +29,29 @@ type SetResponse struct {
 	OK bool
 }
 
+// NodeRequest request cho AddNode/RemoveNode
+type NodeRequest struct {
+	IP string
+}
+
+// NodeResponse response cho AddNode/RemoveNode
+type NodeResponse struct {
+	OK    bool
+	Error string
+}
+
+// GetNodeRequest request cho GetNodeId
+type GetNodeRequest struct {
+	Bucket string
+	Key    int
+}
+
+// GetNodeResponse response cho GetNodeId
+type GetNodeResponse struct {
+	NodeID string
+	Error  string
+}
+
 // LoadBalancer quản lý các node sử dụng consistent hashing
 type LoadBalancer struct {
 	consistent *Consistent
@@ -134,6 +157,44 @@ func (lb *LoadBalancer) Set(req SetRequest, res *SetResponse) error {
 	}
 
 	return client.Call("API.Set", req, res)
+}
+
+// RPC-exposed methods
+
+// AddNodeRPC thêm một node mới vào load balancer (RPC-exposed)
+func (lb *LoadBalancer) AddNodeRPC(req NodeRequest, res *NodeResponse) error {
+	err := lb.AddNode(req.IP)
+	if err != nil {
+		res.OK = false
+		res.Error = err.Error()
+		return nil
+	}
+	res.OK = true
+	return nil
+}
+
+// RemoveNodeRPC xóa một node khỏi load balancer (RPC-exposed)
+func (lb *LoadBalancer) RemoveNodeRPC(req NodeRequest, res *NodeResponse) error {
+	lb.RemoveNode(req.IP)
+	res.OK = true
+	return nil
+}
+
+// GetNodeId lấy node ID cho một bucket:key (RPC-exposed)
+func (lb *LoadBalancer) GetNodeId(req GetNodeRequest, res *GetNodeResponse) error {
+	node, err := lb.GetNode(fmt.Sprintf("%s:%d", req.Bucket, req.Key))
+	if err != nil {
+		res.Error = err.Error()
+		return nil
+	}
+	res.NodeID = node
+	return nil
+}
+
+// GetNodesRPC lấy tất cả các node hiện tại (RPC-exposed)
+func (lb *LoadBalancer) GetNodesRPC(req struct{}, res *[]string) error {
+	*res = lb.GetNodes()
+	return nil
 }
 
 func main() {
