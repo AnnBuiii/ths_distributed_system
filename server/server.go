@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -53,6 +54,9 @@ func (a *API) Set(req SetRequest, res *SetResponse) error {
 }
 
 func main() {
+	port := flag.String("port", "8080", "Port to listen on")
+	flag.Parse()
+
 	store, err := fastdb.Open(":memory:", 100)
 	if err != nil {
 		log.Fatal(err)
@@ -68,10 +72,11 @@ func main() {
 	api := &API{db: store}
 	rpc.Register(api)
 
-	listener, err := net.Listen("tcp", ":8080")
+	addr := ":" + *port
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal("Listener error:", err)
 	}
-	fmt.Println("Server listening on :8080")
+	fmt.Printf("Server listening on %s\n", addr)
 	rpc.Accept(listener)
 }
