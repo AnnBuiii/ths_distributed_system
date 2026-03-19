@@ -68,13 +68,11 @@ func (fdb *DB) Del(bucket string, key int) (bool, error) {
 	fdb.mu.Lock()
 	defer fdb.mu.Unlock()
 
-	// bucket exists?
 	_, found := fdb.keys[bucket]
 	if !found {
 		return found, nil
 	}
 
-	// key exists in bucket?
 	_, found = fdb.keys[bucket][key]
 	if !found {
 		return found, nil
@@ -98,9 +96,6 @@ func (fdb *DB) Del(bucket string, key int) (bool, error) {
 	return true, nil
 }
 
-/*
-Get returns one map value from a bucket.
-*/
 func (fdb *DB) Get(bucket string, key int) ([]byte, bool) {
 	fdb.mu.RLock()
 	defer fdb.mu.RUnlock()
@@ -110,9 +105,6 @@ func (fdb *DB) Get(bucket string, key int) ([]byte, bool) {
 	return data, ok
 }
 
-/*
-GetAll returns all map values from a bucket.
-*/
 func (fdb *DB) GetAll(bucket string) (map[int][]byte, error) {
 	fdb.mu.RLock()
 	defer fdb.mu.RUnlock()
@@ -125,9 +117,6 @@ func (fdb *DB) GetAll(bucket string) (map[int][]byte, error) {
 	return bmap, nil
 }
 
-/*
-Info returns info about the storage.
-*/
 func (fdb *DB) Info() string {
 	count := 0
 	for i := range fdb.keys {
@@ -137,9 +126,6 @@ func (fdb *DB) Info() string {
 	return fmt.Sprintf("%d record(s) in %d bucket(s)", count, len(fdb.keys))
 }
 
-/*
-Set stores one map value in a bucket.
-*/
 func (fdb *DB) Set(bucket string, key int, value []byte) error {
 	fdb.mu.Lock()
 	defer fdb.mu.Unlock()
@@ -163,9 +149,6 @@ func (fdb *DB) Set(bucket string, key int, value []byte) error {
 	return nil
 }
 
-/*
-Close closes the database.
-*/
 func (fdb *DB) Close() error {
 	if fdb.aof != nil {
 		fdb.mu.Lock()

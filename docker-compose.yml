@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  node-01:
+    build:
+      context: .
+    container_name: node-01
+    hostname: node-01
+    environment:
+      - NODE_ID=node-01
+    ports:
+      - "6001:6001"
+    networks:
+      - fastdb-cluster
+
+  node-02:
+    build:
+      context: .
+    container_name: node-02
+    hostname: node-02
+    environment:
+      - NODE_ID=node-02
+    ports:
+      - "6002:6002"
+    networks:
+      - fastdb-cluster
+    depends_on:
+      - node-01
+
+  node-03:
+    build:
+      context: .
+    container_name: node-03
+    hostname: node-03
+    environment:
+      - NODE_ID=node-03
+    ports:
+      - "6003:6003"
+    networks:
+      - fastdb-cluster
+    depends_on:
+      - node-01
+
+  node-04:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-04
+    hostname: node-04
+    environment:
+      - NODE_ID=node-04
+    ports:
+      - "6004:6004"
+    networks:
+      - fastdb-cluster
+    depends_on:
+      - node-01
+
+networks:
+  fastdb-cluster:
+    driver: bridge
